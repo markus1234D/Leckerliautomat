@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider GUI</title>
+    <style>
+        body {
+            background-color: rgb(33, 33, 33);
+            color: lightblue;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            padding: 20px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider {
+            flex-grow: 1;
+        }
+        .minMax {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .button {
+            padding: 5px 10px;
+            background-color: lightblue;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+<h1>Leckerliautomat GUI</h1>
+    <div class="container">
+        <h2>Speed</h2>
+        <div class="slider-container">
+            <span id="minSpeedLabel">0</span>
+            <input type="range" id="speedSlider" class="slider" min="0" max="10">
+            <span id="maxSpeedLabel">10</span>
+            <span id="speedSliderValue">0</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Steps</h2>
+        <div class="minMax">
+            <label for="minStepInput">min</label>
+            <input type="number" id="minStepInput" value="0">
+            <label for="maxStepInput">max</label>
+            <input type="number" id="maxStepInput" value="10">
+        </div>
+
+        <div class="slider-container">
+            <span id="minStepLabel">0</span>
+            <input type="range" id="stepSlider" class="slider" min="0" max="10">
+            <span id="maxStepLabel">10</span>
+            <label id="stepSliderValue">0</label>
+        </div>
+
+        <button class="button" onclick="resetSlider()">Reset</button>
+        <button class="button" onclick="fire()">Fire</button>
+    </div>
+
+    <script>
+        // communication stuff
+        //protokol: command?arg1=value1&arg2=value2...
+        // var ws = new WebSocket('ws://' + window.location.hostname + ':81');
+
+        // ws.onopen = function() {
+        //     console.log("Websocket connected");
+        // };
+        // ws.onmessage = function (evt) {
+        //     const command = extractCommand(evt.data);
+        //     const { argNames, args } = extractArgs(evt.data);
+        //     console.log("Command: " + command);
+        //     console.log("ArgNames: " + argNames);
+        //     console.log("Args: " + args);
+        // }
+
+        function extractCommand(input) {
+            const pos = input.indexOf('?');
+            if (pos !== -1) {
+                return input.substring(0, pos);
+            } else {
+                return input; // Wenn kein '?' gefunden wird, ist der ganze String der Command
+            }
+        }
+
+        function extractArgs(input) {
+            const argNames = [];
+            const args = [];
+            
+            const pos = input.indexOf('?');
+            if (pos === -1) return { argNames, args }; // Falls kein '?' vorhanden ist, keine Argumente
+
+            const query = input.substring(pos + 1);
+            const pairs = query.split('&');
+
+            pairs.forEach(pair => {
+                const [name, value] = pair.split('=');
+                if (name && value) {
+                    argNames.push(name);
+                    args.push(value);
+                }
+            });
+            return { argNames, args };
+        }
+        // end communication stuff
+
+        const speedSlider = document.getElementById("speedSlider");
+        const minStepInput = document.getElementById("minStepInput");
+        const maxStepInput = document.getElementById("maxStepInput");
+        const stepSlider = document.getElementById("stepSlider");
+        const minStepLabel = document.getElementById("minStepLabel");
+        const maxStepLabel = document.getElementById("maxStepLabel");
+        const stepSliderValue = document.getElementById("stepSliderValue");
+        const speedSliderValue = document.getElementById("speedSliderValue");
+
+        stepSlider.min = minStepInput.value;
+        stepSlider.max = maxStepInput.value;
+        minStepLabel.textContent = minStepInput.value;
+        maxStepLabel.textContent = maxStepInput.value;
+        stepSliderValue.textContent = stepSlider.value;
+        speedSliderValue.textContent = speedSlider.value;
+
+        function updateStepSliderLimits() {
+            stepSlider.min = minStepInput.value;
+            stepSlider.max = maxStepInput.value;
+            minStepLabel.textContent = minStepInput.value;
+            maxStepLabel.textContent = maxStepInput.value;
+            stepSlider.value = Math.min(stepSlider.value, maxStepInput.value);
+            stepSliderValue.textContent = stepSlider.value;
+        }
+
+        function resetSlider() {
+            minStepInput.value = 0;
+            maxStepInput.value = 10;
+            updateStepSliderLimits();
+        }
+
+        minStepInput.addEventListener("change", updateStepSliderLimits);
+        maxStepInput.addEventListener("change", updateStepSliderLimits);
+        speedSlider.addEventListener("input", () => {
+            speedSliderValue.textContent = speedSlider.value;
+        });
+        stepSlider.addEventListener("input", () => {
+            stepSliderValue.textContent = stepSlider.value;
+        });
+
+        function fire() {
+            const speed = speedSlider.value;
+            const steps = stepSlider.value;
+            const url = `fire?speed=${speed}&steps=${steps}`;
+            console.log(url);
+            // ws.send(url);
+        }
+        
+    </script>
+
+</body>
+</html>
