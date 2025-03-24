@@ -5,8 +5,13 @@
 #include <ESPAsyncWebServer.h>
 
 #define DEBUG
-#define WIFI_SSID "your-ssid"
-#define WIFI_PASSWORD "your-password"
+
+#define WIFI_SSID                    "FRITZ!Mox"
+#define WIFI_PASSWORD               "BugolEiz42"
+// #define WIFI_SSID                    "ZenFone7 Pro_6535"
+// #define WIFI_PASSWORD                "e24500606"
+// #define WIFI_SSID                    "SM-Fritz"
+// #define WIFI_PASSWORD                "47434951325606561069"
 
 class GuiWorker {
 
@@ -31,7 +36,7 @@ private:
     String extractCommand(const String& input);
     int extractArgs(const String& input, std::vector<String>& argNames, std::vector<String>& args);
     void debugPrint(String str);
-    void hadleMessage(const String& message);
+    void handleMessage(const String& message);
 };
 
 GuiWorker::GuiWorker() : webSocketServer(81), server(80) {
@@ -69,7 +74,6 @@ void GuiWorker::init() {
         request->send(200, "text/html", this->getHtml());
     });
     server.begin();
-
 }
 
 String GuiWorker::extractCommand(const String& input) {
@@ -135,7 +139,7 @@ void GuiWorker::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
         String receivedMessage = String((char*)payload);
         // String response = "ESP32 received: " + receivedMessage;
         // webSocketServer.sendTXT(num, receivedMessage.c_str());
-        hadleMessage(receivedMessage);
+        handleMessage(receivedMessage);
         break;
     }
 }
@@ -144,7 +148,7 @@ void GuiWorker::handleGui() {
     webSocketServer.loop();
 }
 
-void GuiWorker::hadleMessage(const String& message) {
+void GuiWorker::handleMessage(const String& message) {
     String command = extractCommand(message);
     std::vector<String> argNames;
     std::vector<String> args;

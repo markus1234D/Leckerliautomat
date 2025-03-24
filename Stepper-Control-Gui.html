@@ -72,19 +72,19 @@
 
     <script>
         // communication stuff
-        //protokol: command?arg1=value1&arg2=value2...
-        // var ws = new WebSocket('ws://' + window.location.hostname + ':81');
+        // protokol: command?arg1=value1&arg2=value2...
+        var ws = new WebSocket(window.location.hostname + ':81');
 
-        // ws.onopen = function() {
-        //     console.log("Websocket connected");
-        // };
-        // ws.onmessage = function (evt) {
-        //     const command = extractCommand(evt.data);
-        //     const { argNames, args } = extractArgs(evt.data);
-        //     console.log("Command: " + command);
-        //     console.log("ArgNames: " + argNames);
-        //     console.log("Args: " + args);
-        // }
+        ws.onopen = function() {
+            console.log("Websocket connected");
+        };
+        ws.onmessage = function (evt) {
+            const command = extractCommand(evt.data);
+            const { argNames, args } = extractArgs(evt.data);
+            console.log("Command: " + command);
+            console.log("ArgNames: " + argNames);
+            console.log("Args: " + args);
+       }
 
         function extractCommand(input) {
             const pos = input.indexOf('?');
@@ -161,7 +161,7 @@
             const steps = stepSlider.value;
             const url = `fire?speed=${speed}&steps=${steps}`;
             console.log(url);
-            // ws.send(url);
+            ws.send(url);
         }
         
     </script>
