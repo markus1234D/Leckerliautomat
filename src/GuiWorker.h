@@ -137,8 +137,6 @@ void GuiWorker::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     case WStype_TEXT:
         Serial.printf("[%u] Received text: %s\n", num, payload);
         String receivedMessage = String((char*)payload);
-        // String response = "ESP32 received: " + receivedMessage;
-        // webSocketServer.sendTXT(num, receivedMessage.c_str());
         handleMessage(receivedMessage);
         break;
     }
@@ -153,19 +151,18 @@ void GuiWorker::handleMessage(const String& message) {
     std::vector<String> argNames;
     std::vector<String> args;
     int numArgs = extractArgs(message, argNames, args);
+    debugPrint("Command: " + command);
+    debugPrint("NumArgs: " + String(numArgs));
+    for (int i = 0; i < numArgs; i++) {
+        debugPrint(argNames[i] + ": " + args[i]);
+    }
 
     if (command == "fire") {
-        int speed = 0;
-        int steps = 0;
-        for (int i = 0; i < numArgs; i++) {
-            if (argNames[i] == "speed") {
-                speed = args[i].toInt();
-            } else if (argNames[i] == "steps") {
-                steps = args[i].toInt();
-            }
-        }
-        debugPrint("Speed: " + String(speed));
-        debugPrint("Steps: " + String(steps));
+        int speed = args[0].toInt();
+        int steps = args[1].toInt();
+        debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
+        // Hier können Sie den Code hinzufügen, um die Geschwindigkeit und die Schritte zu verarbeiten
+
     }
 }
 
@@ -247,18 +244,18 @@ String GuiWorker::getHtml() {
     <script>
         // communication stuff
         //protokol: command?arg1=value1&arg2=value2...
-        // var ws = new WebSocket('ws://' + window.location.hostname + ':81');
+        var ws = new WebSocket('ws://' + window.location.hostname + ':81');
 
-        // ws.onopen = function() {
-        //     console.log("Websocket connected");
-        // };
-        // ws.onmessage = function (evt) {
-        //     const command = extractCommand(evt.data);
-        //     const { argNames, args } = extractArgs(evt.data);
-        //     console.log("Command: " + command);
-        //     console.log("ArgNames: " + argNames);
-        //     console.log("Args: " + args);
-        // }
+        ws.onopen = function() {
+            console.log("Websocket connected");
+        };
+        ws.onmessage = function (evt) {
+            const command = extractCommand(evt.data);
+            const { argNames, args } = extractArgs(evt.data);
+            console.log("Command: " + command);
+            console.log("ArgNames: " + argNames);
+            console.log("Args: " + args);
+        }
 
         function extractCommand(input) {
             const pos = input.indexOf('?');
@@ -334,8 +331,8 @@ String GuiWorker::getHtml() {
             const speed = speedSlider.value;
             const steps = stepSlider.value;
             const url = `fire?speed=${speed}&steps=${steps}`;
-            console.log(url);
-            // ws.send(url);
+            console.log("ws send: " + url);
+            ws.send(url);
         }
         
     </script>
