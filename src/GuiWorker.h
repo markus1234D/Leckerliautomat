@@ -6,16 +6,14 @@
 
 #define DEBUG
 
-#define WIFI_SSID                    "FRITZ!Mox"
-#define WIFI_PASSWORD               "BugolEiz42"
+// #define WIFI_SSID                    "FRITZ!Mox"
+// #define WIFI_PASSWORD               "BugolEiz42"
 // #define WIFI_SSID                    "ZenFone7 Pro_6535"
 // #define WIFI_PASSWORD                "e24500606"
-// #define WIFI_SSID                    "SM-Fritz"
-// #define WIFI_PASSWORD                "47434951325606561069"
+#define WIFI_SSID                    "SM-Fritz"
+#define WIFI_PASSWORD                "47434951325606561069"
 
 class GuiWorker {
-
-    typedef void (*valChangeFunc)(int attribute);   
 
 public:
     // Constructor
@@ -23,11 +21,14 @@ public:
     void init();
     void handleGui();
     String getHtml();
-    
+    void onFireButtonClick(void (*callback)(int speed, int steps)) {
+        fireButtonCallback = callback;
+    }
 
 
 private:
     // Private member variables
+    void (*fireButtonCallback)(int speed, int steps) = nullptr;
     WebSocketsServer webSocketServer;
     AsyncWebServer server;
 
@@ -52,6 +53,12 @@ void GuiWorker::debugPrint(String str) {
 }
 
 void GuiWorker::init() {
+    //set fix IP address
+    // IPAddress local_IP(192,168,178,42);
+    // if (!WiFi.config(local_IP, WiFi.gatewayIP(), WiFi.subnetMask())) {
+    //     Serial.println("STA Failed to configure");
+    // }
+
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
@@ -160,9 +167,13 @@ void GuiWorker::handleMessage(const String& message) {
     if (command == "fire") {
         int speed = args[0].toInt();
         int steps = args[1].toInt();
-        debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
+        // debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
         // Hier können Sie den Code hinzufügen, um die Geschwindigkeit und die Schritte zu verarbeiten
-
+        if(fireButtonCallback) {
+            fireButtonCallback(speed, steps);
+        } else {
+            debugPrint("No callback set for fire button");
+        }
     }
 }
 
@@ -215,8 +226,8 @@ String GuiWorker::getHtml() {
         <h2>Speed</h2>
         <div class="slider-container">
             <span id="minSpeedLabel">0</span>
-            <input type="range" id="speedSlider" class="slider" min="0" max="10">
-            <span id="maxSpeedLabel">10</span>
+            <input type="range" id="speedSlider" class="slider" min="0" max="1000">
+            <span id="maxSpeedLabel">1000</span>
             <span id="speedSliderValue">0</span>
         </div>
     </div>
@@ -225,16 +236,16 @@ String GuiWorker::getHtml() {
         <h2>Steps</h2>
         <div class="minMax">
             <label for="minStepInput">min</label>
-            <input type="number" id="minStepInput" value="0">
+            <input type="number" id="minStepInput" value="-1000">
             <label for="maxStepInput">max</label>
-            <input type="number" id="maxStepInput" value="10">
+            <input type="number" id="maxStepInput" value="1000">
         </div>
 
         <div class="slider-container">
             <span id="minStepLabel">0</span>
-            <input type="range" id="stepSlider" class="slider" min="0" max="10">
-            <span id="maxStepLabel">10</span>
-            <label id="stepSliderValue">0</label>
+            <input type="range" id="stepSlider" class="slider" min="-1000" max="1000">
+            <span id="maxStepLabel">500</span>
+            <label id="stepSliderValue">500</label>
         </div>
 
         <button class="button" onclick="resetSlider()">Reset</button>
@@ -313,8 +324,8 @@ String GuiWorker::getHtml() {
         }
 
         function resetSlider() {
-            minStepInput.value = 0;
-            maxStepInput.value = 10;
+            minStepInput.value = -1000;
+            maxStepInput.value = 1000;
             updateStepSliderLimits();
         }
 
@@ -336,10 +347,8 @@ String GuiWorker::getHtml() {
         }
         
     </script>
-
 </body>
 </html>
-
 
 
 )rawliteral";

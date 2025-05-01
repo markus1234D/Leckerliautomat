@@ -44,8 +44,8 @@
         <h2>Speed</h2>
         <div class="slider-container">
             <span id="minSpeedLabel">0</span>
-            <input type="range" id="speedSlider" class="slider" min="0" max="10">
-            <span id="maxSpeedLabel">10</span>
+            <input type="range" id="speedSlider" class="slider" min="0" max="1000">
+            <span id="maxSpeedLabel">1000</span>
             <span id="speedSliderValue">0</span>
         </div>
     </div>
@@ -54,16 +54,16 @@
         <h2>Steps</h2>
         <div class="minMax">
             <label for="minStepInput">min</label>
-            <input type="number" id="minStepInput" value="0">
+            <input type="number" id="minStepInput" value="-1000">
             <label for="maxStepInput">max</label>
-            <input type="number" id="maxStepInput" value="10">
+            <input type="number" id="maxStepInput" value="1000">
         </div>
 
         <div class="slider-container">
             <span id="minStepLabel">0</span>
-            <input type="range" id="stepSlider" class="slider" min="0" max="10">
-            <span id="maxStepLabel">10</span>
-            <label id="stepSliderValue">0</label>
+            <input type="range" id="stepSlider" class="slider" min="-1000" max="1000">
+            <span id="maxStepLabel">500</span>
+            <label id="stepSliderValue">500</label>
         </div>
 
         <button class="button" onclick="resetSlider()">Reset</button>
@@ -142,8 +142,8 @@
         }
 
         function resetSlider() {
-            minStepInput.value = 0;
-            maxStepInput.value = 10;
+            minStepInput.value = -1000;
+            maxStepInput.value = 1000;
             updateStepSliderLimits();
         }
 
@@ -165,6 +165,5 @@
         }
         
     </script>
-
 </body>
 </html>
