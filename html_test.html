@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>GUI mit Grid</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .row-container {
+      display: flex; /* Flexbox aktivieren */
+      /*flex-direction: row; */
+      padding: 20px;
+      column-gap: 20px; /* Abstand zwischen den Spalten */
+      justify-content: center;
+    }
+
+    .column-container {
+      flex: 1; /* Gleichmäßige Breite für alle Spalten */
+      display: flex;
+      flex-direction: column; /* Spaltenanordnung */
+      gap: 20px; /* Abstand zwischen den Elementen in der Spalte */
+      border-color: #4CAF50;
+      border-style: solid;
+      border-width: 2px;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="row-container">
+    <div class="column-container">
+      <button>button1</button>
+      <button>button2</button>
+      <div class="row-container">
+        <button>button3</button>
+        <button>button4</button>
+      </div>
+    </div>
+    <div class="column-container">
+      Box 2
+      <div class="row-container">
+        <label for="stepSlider" id="minStepLabel">0</label>
+        <input type="range" id="stepSlider" class="slider" min="-1000" max="1000" aria-label="Step Slider">
+        <label for="stepSlider" id="maxStepLabel">500</label>
+      </div>
+      <label for="stepSlider" id="stepSliderValue">500</label>
+    </div>
+  </div>
+  <div class="row-container">
+    <div class="column-container">Box 3</div>
+    <div class="column-container">Box 4</div>
+    <div class="column-container">Box 5</div>
+  </div>
+</body>
+</html>

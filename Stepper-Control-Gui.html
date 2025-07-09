@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slider GUI</title>
+    <title>Leckerliautomat</title>
     <style>
         body {
             background-color: rgb(33, 33, 33);
@@ -12,6 +12,8 @@
         }
         .container {
             padding: 20px;
+            border: 2px solid lightblue;
+            border-radius: 10px;
         }
         .slider-container {
             display: flex;
@@ -41,33 +43,39 @@
 <body>
 <h1>Leckerliautomat GUI</h1>
     <div class="container">
-        <h2>Speed</h2>
-        <div class="slider-container">
-            <span id="minSpeedLabel">0</span>
-            <input type="range" id="speedSlider" class="slider" min="0" max="1000">
-            <span id="maxSpeedLabel">1000</span>
-            <span id="speedSliderValue">0</span>
-        </div>
-    </div>
-
-    <div class="container">
-        <h2>Steps</h2>
-        <div class="minMax">
-            <label for="minStepInput">min</label>
-            <input type="number" id="minStepInput" value="-1000">
-            <label for="maxStepInput">max</label>
-            <input type="number" id="maxStepInput" value="1000">
+        <div class="container">
+            <h2>Speed</h2>
+            <div class="slider-container">
+                <span id="minSpeedLabel">0</span>
+                <input type="range" id="speedSlider" class="slider" min="0" max="1000">
+                <span id="maxSpeedLabel">1000</span>
+                <span id="speedSliderValue">0</span>
+            </div>
         </div>
 
-        <div class="slider-container">
-            <span id="minStepLabel">0</span>
-            <input type="range" id="stepSlider" class="slider" min="-1000" max="1000">
-            <span id="maxStepLabel">500</span>
-            <label id="stepSliderValue">500</label>
-        </div>
+        <div class="container">
+            <h2>Steps</h2>
+            <div class="minMax">
+                <label for="minStepInput">min</label>
+                <input type="number" id="minStepInput" value="-1000">
+                <label for="maxStepInput">max</label>
+                <input type="number" id="maxStepInput" value="1000">
+            </div>
 
-        <button class="button" onclick="resetSlider()">Reset</button>
-        <button class="button" onclick="fire()">Fire</button>
+            <div class="slider-container">
+                <span id="minStepLabel">0</span>
+                <input type="range" id="stepSlider" class="slider" min="-1000" max="1000">
+                <span id="maxStepLabel">500</span>
+                <label id="stepSliderValue">500</label>
+            </div>
+
+            <button class="button" onclick="resetSlider()">Reset</button>
+            <button class="button" onclick="fire()">Fire</button>
+        </div>
+        <div class="container">
+
+            <button class="button" id="stopGoBtn">stop/go</button>
+        </div>
     </div>
 
     <script>
@@ -124,7 +132,9 @@
         const maxStepLabel = document.getElementById("maxStepLabel");
         const stepSliderValue = document.getElementById("stepSliderValue");
         const speedSliderValue = document.getElementById("speedSliderValue");
-
+        const stopGoButton = document.getElementById("stopGoBtn");
+        stopGoButton.addEventListener("mousedown", motorGo);
+        stopGoButton.addEventListener("mouseup", motorStop);
         stepSlider.min = minStepInput.value;
         stepSlider.max = maxStepInput.value;
         minStepLabel.textContent = minStepInput.value;
@@ -147,6 +157,11 @@
             updateStepSliderLimits();
         }
 
+        function stopAndGo() {
+            // Implement stop/go functionality here
+            console.log("Stop/Go button clicked");
+        }
+
         minStepInput.addEventListener("change", updateStepSliderLimits);
         maxStepInput.addEventListener("change", updateStepSliderLimits);
         speedSlider.addEventListener("input", () => {
@@ -160,6 +175,19 @@
             const speed = speedSlider.value;
             const steps = stepSlider.value;
             const url = `fire?speed=${speed}&steps=${steps}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+
+        function motorGo() {
+            const speed = speedSlider.value;
+            const steps = stepSlider.value;
+            const url = `motorGo?speed=${speed}&steps=${steps}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+        function motorStop() {
+            const url = "motorStop";
             console.log("ws send: " + url);
             ws.send(url);
         }
