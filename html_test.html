@@ -8,20 +8,27 @@
       margin: 0;
       font-family: Arial, sans-serif;
     }
-
+    h1 {
+      text-align: center;
+    }
     .row-container {
       display: flex; /* Flexbox aktivieren */
-      /*flex-direction: row; */
+      flex-wrap: wrap;
+      gap: 20px;
+      @media (max-width: 600px) {
+        flex-direction: column;
+      }
+      flex-direction: row;
       padding: 20px;
       column-gap: 20px; /* Abstand zwischen den Spalten */
       justify-content: center;
+      text-align: center;
     }
 
     .column-container {
       flex: 1; /* Gleichmäßige Breite für alle Spalten */
       display: flex;
       flex-direction: column; /* Spaltenanordnung */
-      gap: 20px; /* Abstand zwischen den Elementen in der Spalte */
       border-color: #4CAF50;
       border-style: solid;
       border-width: 2px;
@@ -29,34 +36,183 @@
       text-align: center;
       padding: 20px;
       border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .slider {
+      width: 60%;
+      margin: 10px 0;
+      min-width: 200px; /* Mindestbreite für den Slider */
+    }
+    .number-input {
+      width: 100px; /* Breite für die Eingabefelder */
+      margin: 10px 0;
+      max-width: 80px; /* Maximale Breite für die Eingabefelder */
     }
   </style>
 </head>
 <body>
-
+  <h1>Leckerliautomat GUI</h1>
   <div class="row-container">
     <div class="column-container">
-      <button>button1</button>
-      <button>button2</button>
+      <h2>Speed Control</h2>
       <div class="row-container">
-        <button>button3</button>
-        <button>button4</button>
+        <label for="speedSlider" id="minSpeedLabel">0</label>
+        <input type="range" id="speedSlider" class="slider" min="0" max="1000" aria-label="Speed Slider" >
+        <label for="speedSlider" id="maxSpeedLabel">1000</label>
+      </div>
+      <label for="speedSlider" id="speedSliderValue">500</label>
+      <div class="row-container">
+        <div class="row-container">
+          <button class="button" id="stopGoBtn">stop/go</button>
+        </div>
       </div>
     </div>
+
     <div class="column-container">
-      Box 2
+      <h3>Step Control</h3>
+      <div class="row-container">
+        <div class="column-container">
+          <label for="minStepInput">min</label>
+          <input type="number" class="number-input" id="minStepInput" value="-1000">
+        </div>
+        <div class="column-container">
+          <label for="maxStepInput">max</label>
+          <input type="number" class="number-input" id="maxStepInput" value="1000">
+        </div>
+      </div>
       <div class="row-container">
         <label for="stepSlider" id="minStepLabel">0</label>
         <input type="range" id="stepSlider" class="slider" min="-1000" max="1000" aria-label="Step Slider">
         <label for="stepSlider" id="maxStepLabel">500</label>
       </div>
       <label for="stepSlider" id="stepSliderValue">500</label>
+      <div class="row-container">
+        <button class="button" id="resetBtn">Reset</button>
+        <button class="button" id="fireBtn">Fire</button>
+      </div>
     </div>
   </div>
-  <div class="row-container">
-    <div class="column-container">Box 3</div>
-    <div class="column-container">Box 4</div>
-    <div class="column-container">Box 5</div>
-  </div>
+
+    <script>
+        // communication stuff
+        //protokol: command?arg1=value1&arg2=value2...
+        var ws = new WebSocket('ws://' + window.location.hostname + ':81');
+
+        ws.onopen = function() {
+            console.log("Websocket connected");
+        };
+        ws.onmessage = function (evt) {
+            const command = extractCommand(evt.data);
+            const { argNames, args } = extractArgs(evt.data);
+            console.log("Command: " + command);
+            console.log("ArgNames: " + argNames);
+            console.log("Args: " + args);
+        }
+
+        function extractCommand(input) {
+            const pos = input.indexOf('?');
+            if (pos !== -1) {
+                return input.substring(0, pos);
+            } else {
+                return input; // Wenn kein '?' gefunden wird, ist der ganze String der Command
+            }
+        }
+
+        function extractArgs(input) {
+            const argNames = [];
+            const args = [];
+            
+            const pos = input.indexOf('?');
+            if (pos === -1) return { argNames, args }; // Falls kein '?' vorhanden ist, keine Argumente
+
+            const query = input.substring(pos + 1);
+            const pairs = query.split('&');
+
+            pairs.forEach(pair => {
+                const [name, value] = pair.split('=');
+                if (name && value) {
+                    argNames.push(name);
+                    args.push(value);
+                }
+            });
+            return { argNames, args };
+        }
+        // end communication stuff
+
+        const speedSlider = document.getElementById("speedSlider");
+        const minStepInput = document.getElementById("minStepInput");
+        const maxStepInput = document.getElementById("maxStepInput");
+        const stepSlider = document.getElementById("stepSlider");
+        const minStepLabel = document.getElementById("minStepLabel");
+        const maxStepLabel = document.getElementById("maxStepLabel");
+        const stepSliderValue = document.getElementById("stepSliderValue");
+        const speedSliderValue = document.getElementById("speedSliderValue");
+        const stopGoButton = document.getElementById("stopGoBtn");
+        const resetButton = document.getElementById("resetBtn");
+        const fireButton = document.getElementById("fireBtn");
+        stopGoButton.addEventListener("mousedown", motorGo);
+        stopGoButton.addEventListener("mouseup", motorStop);
+        resetButton.addEventListener("click", resetSlider);
+        fireButton.addEventListener("click", fire);
+        stepSlider.min = minStepInput.value;
+        stepSlider.max = maxStepInput.value;
+        minStepLabel.textContent = minStepInput.value;
+        maxStepLabel.textContent = maxStepInput.value;
+        stepSliderValue.textContent = stepSlider.value;
+        speedSliderValue.textContent = speedSlider.value;
+
+        function updateStepSliderLimits() {
+            stepSlider.min = minStepInput.value;
+            stepSlider.max = maxStepInput.value;
+            minStepLabel.textContent = minStepInput.value;
+            maxStepLabel.textContent = maxStepInput.value;
+            stepSlider.value = Math.min(stepSlider.value, maxStepInput.value);
+            stepSliderValue.textContent = stepSlider.value;
+        }
+
+        function resetSlider() {
+            minStepInput.value = -1000;
+            maxStepInput.value = 1000;
+            updateStepSliderLimits();
+        }
+
+        function stopAndGo() {
+            // Implement stop/go functionality here
+            console.log("Stop/Go button clicked");
+        }
+
+        minStepInput.addEventListener("change", updateStepSliderLimits);
+        maxStepInput.addEventListener("change", updateStepSliderLimits);
+        speedSlider.addEventListener("input", () => {
+            speedSliderValue.textContent = speedSlider.value;
+        });
+        stepSlider.addEventListener("input", () => {
+            stepSliderValue.textContent = stepSlider.value;
+        });
+
+        function fire() {
+            const speed = speedSlider.value;
+            const steps = stepSlider.value;
+            const url = `fire?speed=${speed}&steps=${steps}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+
+        function motorGo() {
+            const speed = speedSlider.value;
+            const steps = stepSlider.value;
+            const url = `motorGo?speed=${speed}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+        function motorStop() {
+            const url = "motorStop";
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+        
+    </script>
 </body>
 </html>

@@ -24,11 +24,19 @@ public:
     void onFireButtonClick(void (*callback)(int speed, int steps)) {
         fireButtonCallback = callback;
     }
+    void onMotorGo(void (*callback)(int speed)) {
+        motorGoCallback = callback;
+    }
+    void onMotorStop(void (*callback)()) {
+        motorStopCallback = callback;
+    }
 
 
 private:
     // Private member variables
     void (*fireButtonCallback)(int speed, int steps) = nullptr;
+    void (*motorGoCallback)(int speed) = nullptr;
+    void (*motorStopCallback)() = nullptr;
     WebSocketsServer webSocketServer;
     AsyncWebServer server;
 
@@ -168,11 +176,27 @@ void GuiWorker::handleMessage(const String& message) {
         int speed = args[0].toInt();
         int steps = args[1].toInt();
         // debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
-        // Hier können Sie den Code hinzufügen, um die Geschwindigkeit und die Schritte zu verarbeiten
         if(fireButtonCallback) {
             fireButtonCallback(speed, steps);
         } else {
             debugPrint("No callback set for fire button");
+        }
+    }
+    else if (command == "motorGo") {
+        int speed = args[0].toInt();
+        debugPrint("MotorGo command received with speed: " + String(speed));
+        if (motorGoCallback) {
+            motorGoCallback(speed);
+        } else {
+            debugPrint("No callback set for motor go");
+        }
+    }
+    else if (command == "motorStop") {
+        debugPrint("MotorStop command received");
+        if (motorStopCallback) {
+            motorStopCallback();
+        } else {
+            debugPrint("No callback set for motor stop");
         }
     }
 }
@@ -183,74 +207,99 @@ String GuiWorker::getHtml() {
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slider GUI</title>
-    <style>
-        body {
-            background-color: rgb(33, 33, 33);
-            color: lightblue;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            padding: 20px;
-        }
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .slider {
-            flex-grow: 1;
-        }
-        .minMax {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .button {
-            padding: 5px 10px;
-            background-color: lightblue;
-            border: none;
-            cursor: pointer;
-        }
-        input[type="number"] {
-            width: 50px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>GUI mit Grid</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+    }
+    .row-container {
+      display: flex; /* Flexbox aktivieren */
+      flex-wrap: wrap;
+      gap: 20px;
+      @media (max-width: 600px) {
+        flex-direction: column;
+      }
+      flex-direction: row;
+      padding: 20px;
+      column-gap: 20px; /* Abstand zwischen den Spalten */
+      justify-content: center;
+      text-align: center;
+    }
+
+    .column-container {
+      flex: 1; /* Gleichmäßige Breite für alle Spalten */
+      display: flex;
+      flex-direction: column; /* Spaltenanordnung */
+      border-color: #4CAF50;
+      border-style: solid;
+      border-width: 2px;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    .slider {
+      width: 60%;
+      margin: 10px 0;
+      min-width: 200px; /* Mindestbreite für den Slider */
+    }
+    .number-input {
+      width: 100px; /* Breite für die Eingabefelder */
+      margin: 10px 0;
+      max-width: 80px; /* Maximale Breite für die Eingabefelder */
+    }
+  </style>
 </head>
 <body>
-<h1>Leckerliautomat GUI</h1>
-    <div class="container">
-        <h2>Speed</h2>
-        <div class="slider-container">
-            <span id="minSpeedLabel">0</span>
-            <input type="range" id="speedSlider" class="slider" min="0" max="1000">
-            <span id="maxSpeedLabel">1000</span>
-            <span id="speedSliderValue">0</span>
+  <h1>Leckerliautomat GUI</h1>
+  <div class="row-container">
+    <div class="column-container">
+      <h2>Speed Control</h2>
+      <div class="row-container">
+        <label for="speedSlider" id="minSpeedLabel">0</label>
+        <input type="range" id="speedSlider" class="slider" min="0" max="1000" aria-label="Speed Slider" >
+        <label for="speedSlider" id="maxSpeedLabel">1000</label>
+      </div>
+      <label for="speedSlider" id="speedSliderValue">500</label>
+      <div class="row-container">
+        <div class="row-container">
+          <button class="button" id="stopGoBtn">stop/go</button>
         </div>
+      </div>
     </div>
 
-    <div class="container">
-        <h2>Steps</h2>
-        <div class="minMax">
-            <label for="minStepInput">min</label>
-            <input type="number" id="minStepInput" value="-1000">
-            <label for="maxStepInput">max</label>
-            <input type="number" id="maxStepInput" value="1000">
+    <div class="column-container">
+      <h3>Step Control</h3>
+      <div class="row-container">
+        <div class="column-container">
+          <label for="minStepInput">min</label>
+          <input type="number" class="number-input" id="minStepInput" value="-1000">
         </div>
-
-        <div class="slider-container">
-            <span id="minStepLabel">0</span>
-            <input type="range" id="stepSlider" class="slider" min="-1000" max="1000">
-            <span id="maxStepLabel">500</span>
-            <label id="stepSliderValue">500</label>
+        <div class="column-container">
+          <label for="maxStepInput">max</label>
+          <input type="number" class="number-input" id="maxStepInput" value="1000">
         </div>
-
-        <button class="button" onclick="resetSlider()">Reset</button>
-        <button class="button" onclick="fire()">Fire</button>
+      </div>
+      <div class="row-container">
+        <label for="stepSlider" id="minStepLabel">0</label>
+        <input type="range" id="stepSlider" class="slider" min="-1000" max="1000" aria-label="Step Slider">
+        <label for="stepSlider" id="maxStepLabel">500</label>
+      </div>
+      <label for="stepSlider" id="stepSliderValue">500</label>
+      <div class="row-container">
+        <button class="button" id="resetBtn">Reset</button>
+        <button class="button" id="fireBtn">Fire</button>
+      </div>
     </div>
+  </div>
 
     <script>
         // communication stuff
@@ -306,7 +355,13 @@ String GuiWorker::getHtml() {
         const maxStepLabel = document.getElementById("maxStepLabel");
         const stepSliderValue = document.getElementById("stepSliderValue");
         const speedSliderValue = document.getElementById("speedSliderValue");
-
+        const stopGoButton = document.getElementById("stopGoBtn");
+        const resetButton = document.getElementById("resetBtn");
+        const fireButton = document.getElementById("fireBtn");
+        stopGoButton.addEventListener("mousedown", motorGo);
+        stopGoButton.addEventListener("mouseup", motorStop);
+        resetButton.addEventListener("click", resetSlider);
+        fireButton.addEventListener("click", fire);
         stepSlider.min = minStepInput.value;
         stepSlider.max = maxStepInput.value;
         minStepLabel.textContent = minStepInput.value;
@@ -329,6 +384,11 @@ String GuiWorker::getHtml() {
             updateStepSliderLimits();
         }
 
+        function stopAndGo() {
+            // Implement stop/go functionality here
+            console.log("Stop/Go button clicked");
+        }
+
         minStepInput.addEventListener("change", updateStepSliderLimits);
         maxStepInput.addEventListener("change", updateStepSliderLimits);
         speedSlider.addEventListener("input", () => {
@@ -342,6 +402,19 @@ String GuiWorker::getHtml() {
             const speed = speedSlider.value;
             const steps = stepSlider.value;
             const url = `fire?speed=${speed}&steps=${steps}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+
+        function motorGo() {
+            const speed = speedSlider.value;
+            const steps = stepSlider.value;
+            const url = `motorGo?speed=${speed}`;
+            console.log("ws send: " + url);
+            ws.send(url);
+        }
+        function motorStop() {
+            const url = "motorStop";
             console.log("ws send: " + url);
             ws.send(url);
         }
