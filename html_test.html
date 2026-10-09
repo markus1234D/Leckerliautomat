@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>GUI mit Grid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
@@ -14,15 +15,16 @@
     .row-container {
       display: flex; /* Flexbox aktivieren */
       flex-wrap: wrap;
-      gap: 20px;
-      @media (max-width: 600px) {
+      /* Bei schmalen Bildschirmen in Spalten anordnen. */
+      /* @media screen and (max-width: 1000px) {
         flex-direction: column;
-      }
-      flex-direction: row;
+      } */
+      gap: 20px;
       padding: 20px;
       column-gap: 20px; /* Abstand zwischen den Spalten */
       justify-content: center;
       text-align: center;
+      width: 90%;
     }
 
     .column-container {
@@ -65,7 +67,7 @@
       <label for="speedSlider" id="speedSliderValue">500</label>
       <div class="row-container">
         <div class="row-container">
-          <button class="button" id="stopGoBtn">stop/go</button>
+          <button class="button" type="button" id="stopGoBtn">stop/go</button>
         </div>
       </div>
     </div>

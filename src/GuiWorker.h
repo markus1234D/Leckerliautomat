@@ -4,12 +4,12 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 
-#define DEBUG
+// #define DEBUG
 
-// #define WIFI_SSID                    "FRITZ!Mox"
-// #define WIFI_PASSWORD               "BugolEiz42"
-#define WIFI_SSID                    "ZenFone7 Pro_6535"
-#define WIFI_PASSWORD                "e24500606"
+#define WIFI_SSID                    "FRITZ!Mox"
+#define WIFI_PASSWORD               "BugolEiz42"
+// #define WIFI_SSID                    "ZenFone7 Pro_6535"
+// #define WIFI_PASSWORD                "e24500606"
 // #define WIFI_SSID                    "SM-Fritz"
 // #define WIFI_PASSWORD                "47434951325606561069"
 
@@ -50,7 +50,6 @@ private:
 
 GuiWorker::GuiWorker() : webSocketServer(81), server(80) {
     // Constructor
-    Serial.println("GuiWorker constructor called");
 }
 
 void GuiWorker::debugPrint(String str) {
@@ -70,11 +69,11 @@ void GuiWorker::init() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
-        Serial.println("Connecting to WiFi...");
+        debugPrint("Connecting to WiFi...");
     }
     debugPrint("Connected to WiFi");
     debugPrint("IP address: ");
-    Serial.println(WiFi.localIP());
+    Serial.println(WiFi.localIP());     //TODO.
 
 
     // Start WebSocket-Server
@@ -141,16 +140,16 @@ int GuiWorker::extractArgs(const String& input, std::vector<String>& argNames, s
 void GuiWorker::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
     switch (type) {
     case WStype_DISCONNECTED:
-        Serial.printf("[%u] Disconnected!\n", num);
+        debugPrint(String(num) + " Disconnected!");
         break;
 
     case WStype_CONNECTED:
-        Serial.printf("[%u] Connected!\n", num);
-        webSocketServer.sendTXT(num, "Hello from ESP32!");
+        debugPrint(String(num) + " Connected!");
+        webSocketServer.sendTXT(num, "Hello from ESP32!");  //TODO mit this-> verdeutlichen, dass es sich um die Instanz der Klasse handelt
 
         break;
     case WStype_TEXT:
-        Serial.printf("[%u] Received text: %s\n", num, payload);
+        debugPrint(String(num) + " Message received: " + String((char*)payload));
         String receivedMessage = String((char*)payload);
         handleMessage(receivedMessage);
         break;
@@ -175,7 +174,7 @@ void GuiWorker::handleMessage(const String& message) {
     if (command == "fire") {
         int speed = args[0].toInt();
         int steps = args[1].toInt();
-        // debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
+        debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
         if(fireButtonCallback) {
             fireButtonCallback(speed, steps);
         } else {
@@ -220,15 +219,16 @@ String GuiWorker::getHtml() {
     .row-container {
       display: flex; /* Flexbox aktivieren */
       flex-wrap: wrap;
-      gap: 20px;
-      @media (max-width: 600px) {
+      /* Bei schmalen Bildschirmen in Spalten anordnen. */
+      /* @media screen and (max-width: 1000px) {
         flex-direction: column;
-      }
-      flex-direction: row;
+      } */
+      gap: 20px;
       padding: 20px;
       column-gap: 20px; /* Abstand zwischen den Spalten */
       justify-content: center;
       text-align: center;
+      width: 90%;
     }
 
     .column-container {
@@ -270,9 +270,7 @@ String GuiWorker::getHtml() {
       </div>
       <label for="speedSlider" id="speedSliderValue">500</label>
       <div class="row-container">
-        <div class="row-container">
-          <button class="button" id="stopGoBtn">stop/go</button>
-        </div>
+          <button class="button" type="button" id="stopGoBtn">stop/go</button>
       </div>
     </div>
 
