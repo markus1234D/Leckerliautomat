@@ -54,47 +54,64 @@
   </style>
 </head>
 <body>
-  <h1>Leckerliautomat GUI</h1>
-  <div class="row-container">
-    <div class="column-container">
-      <h2>Speed Control</h2>
-      <div class="row-container">
-        <label for="speedSlider" id="minSpeedLabel">0</label>
-        <input type="range" id="speedSlider" class="slider" min="0" max="1000" aria-label="Speed Slider" >
-        <label for="speedSlider" id="maxSpeedLabel">1000</label>
+  <!-- page size Slider -->
+  <input
+      id="zoomSlider"
+      type="range"
+      min="50"
+      max="200"
+      value="100"
+  >
+  <div id="page">
+    <h1>Leckerliautomat GUI</h1>
+    <div class="row-container">
+      <div class="column-container">
+        <h2>Speed Control</h2>
+        <div class="row-container">
+          <label for="speedSlider" id="minSpeedLabel">0</label>
+          <input type="range" id="speedSlider" class="slider" min="0" max="1000" aria-label="Speed Slider" >
+          <label for="speedSlider" id="maxSpeedLabel">1000</label>
+        </div>
+        <label for="speedSlider" id="speedSliderValue">500</label>
+        <div class="row-container">
+            <button class="button" type="button" id="stopGoBtn">stop/go</button>
+        </div>
       </div>
-      <label for="speedSlider" id="speedSliderValue">500</label>
-      <div class="row-container">
-          <button class="button" type="button" id="stopGoBtn">stop/go</button>
-      </div>
-    </div>
 
-    <div class="column-container">
-      <h3>Step Control</h3>
-      <div class="row-container">
-        <div class="column-container">
-          <label for="minStepInput">min</label>
-          <input type="number" class="number-input" id="minStepInput" value="-1000">
+      <div class="column-container">
+        <h3>Step Control</h3>
+        <div class="row-container">
+          <div class="column-container">
+            <label for="minStepInput">min</label>
+            <input type="number" class="number-input" id="minStepInput" value="-1000">
+          </div>
+          <div class="column-container">
+            <label for="maxStepInput">max</label>
+            <input type="number" class="number-input" id="maxStepInput" value="1000">
+          </div>
         </div>
-        <div class="column-container">
-          <label for="maxStepInput">max</label>
-          <input type="number" class="number-input" id="maxStepInput" value="1000">
+        <div class="row-container">
+          <label for="stepSlider" id="minStepLabel">0</label>
+          <input type="range" id="stepSlider" class="slider" min="-1000" max="1000" aria-label="Step Slider">
+          <label for="stepSlider" id="maxStepLabel">500</label>
         </div>
-      </div>
-      <div class="row-container">
-        <label for="stepSlider" id="minStepLabel">0</label>
-        <input type="range" id="stepSlider" class="slider" min="-1000" max="1000" aria-label="Step Slider">
-        <label for="stepSlider" id="maxStepLabel">500</label>
-      </div>
-      <label for="stepSlider" id="stepSliderValue">500</label>
-      <div class="row-container">
-        <button class="button" id="resetBtn">Reset</button>
-        <button class="button" id="fireBtn">Fire</button>
+        <label for="stepSlider" id="stepSliderValue">500</label>
+        <div class="row-container">
+          <button class="button" id="resetBtn">Reset</button>
+          <button class="button" id="fireBtn">Fire</button>
+        </div>
       </div>
     </div>
   </div>
 
     <script>
+
+      // const slider = document.getElementById("zoomSlider"); 
+      // const page = document.getElementById("page"); 
+      // slider.addEventListener("input", function() { 
+      //   const scale = slider.value / 100; 
+      //   page.style.transform = `scale(${scale})`; });
+      
         // communication stuff
         //protokol: command?arg1=value1&arg2=value2...
         var ws = new WebSocket('ws://' + window.location.hostname + ':81');

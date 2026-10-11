@@ -7,12 +7,14 @@
 
 // #define DEBUG
 
-#define WIFI_SSID                    "FRITZ!Mox"
-#define WIFI_PASSWORD               "BugolEiz42"
+// #define WIFI_SSID                    "FRITZ!Mox"
+// #define WIFI_PASSWORD               "BugolEiz42"
 // #define WIFI_SSID                    "ZenFone7 Pro_6535"
 // #define WIFI_PASSWORD                "e24500606"
-// #define WIFI_SSID                    "SM-Fritz"
-// #define WIFI_PASSWORD                "47434951325606561069"
+#define WIFI_SSID                    "SM-Fritz"
+#define WIFI_PASSWORD                "47434951325606561069"
+// #define WIFI_SSID                    "Pixel_8965"
+// #define WIFI_PASSWORD                "12345678"
 
 class GuiWorker {
 

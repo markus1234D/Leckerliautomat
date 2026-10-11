@@ -83,7 +83,6 @@
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/log/include/esp_log_internal.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-matrix.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-uart.h \
- C:/Users/marku/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/hal/include/hal/uart_types.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-gpio.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/variants/esp32/pins_arduino.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-touch.h \
@@ -122,7 +121,6 @@
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPAddress.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/HardwareSerial.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/HWCDC.h \
- C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/USBCDC.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/Esp.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_partition.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/spi_flash/include/esp_flash.h \
@@ -247,4 +245,5 @@
  .pio/libdeps/az-delivery-devkit-v4/ESPAsyncWebServer/src/WebResponseImpl.h \
  C:/Users/marku/.platformio/packages/framework-arduinoespressif32/cores/esp32/StreamString.h \
  src/DataWorker.h \
- C:/Users/marku/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h
+ C:/Users/marku/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
+ src/MotorWorker.h

@@ -1,0 +1,64 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+    <style>
+        #page {
+            transform-origin: top left;
+        }
+
+        #zoomSlider {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Slider -->
+    <input
+        id="zoomSlider"
+        type="range"
+        min="50"
+        max="200"
+        value="100"
+    >
+
+    <!-- Komplette Seite -->
+    <div id="page">
+
+        <h1>Meine Webseite</h1>
+
+        <p>
+            Dieser komplette Inhalt wird vergrößert.
+        </p>
+
+        <button>Button</button>
+
+        <br><br>
+
+        <img src="bild.jpg" width="300">
+
+    </div>
+
+
+    <script>
+        const slider = document.getElementById("zoomSlider");
+        const page = document.getElementById("page");
+
+        slider.addEventListener("input", function()
+        {
+            const scale = slider.value / 100;
+
+            page.style.transform = `scale(${scale})`;
+        });
+    </script>
+
+</body>
+</html>
+```
