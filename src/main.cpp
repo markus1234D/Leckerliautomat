@@ -5,6 +5,10 @@
 #include "Debug.h"
 
 
+#define DEBUG
+#define pwmFrequency 20000 // Set the PWM frequency to 20 kHz
+#define pwmResolution 8   // Set the PWM resolution to 8 bits
+
 // put function declarations here:
 GuiWorker guiWorker;
 MotorWorker motorWorker(20000, 8); // Initialize MotorWorker with motor pin 19, frequency 20kHz, resolution 8 bits
@@ -25,15 +29,15 @@ void debugPrint(const char* format, ...) {
 void setup() {
   Serial.begin(115200);
   debugPrint("Hello World!");
-  guiWorker.init();
+  guiWorker.init(pwmResolution);
 
-  guiWorker.onFireButtonClick([](int speed, float time) {
-    debugPrint("Fire button pressed with speed: %d, time: %.2f", speed, time);
-    motorWorker.run(speed, time);
+  guiWorker.onFireButtonClick([](int32_t duty, float time) {
+    debugPrint("Fire button pressed with duty: %ld, time: %.2f", static_cast<long>(duty), time);
+    motorWorker.run(duty, time);
   });
-  guiWorker.onMotorGo([](int speed) {
-    debugPrint("Motor go with speed: %d", speed);
-    motorWorker.run(speed);
+  guiWorker.onMotorGo([](int32_t duty) {
+    debugPrint("Motor go with duty: %ld", static_cast<long>(duty));
+    motorWorker.run(duty);
   });
   guiWorker.onMotorStop([]() {
     debugPrint("Motor stop");

@@ -67,13 +67,14 @@
       <div class="column-container">
         <h2>Speed Control</h2>
         <div class="row-container">
-          <label for="speedSlider" id="minSpeedLabel">-100%</label>
-          <input type="range" id="speedSlider" class="slider" min="-100" max="100" aria-label="Speed Slider" >
-          <label for="speedSlider" id="maxSpeedLabel">100%</label>
+          <label for="speedSlider" id="minSpeedLabel">{{MIN_DUTY}}</label>
+          <input type="range" id="speedSlider" class="slider" min="{{MIN_DUTY}}" max="{{MAX_DUTY}}" aria-label="Speed Slider" >
+          <label for="speedSlider" id="maxSpeedLabel">{{MAX_DUTY}}</label>
         </div>
-        <label for="speedSlider" id="speedSliderValue">50%</label>
+        <label for="speedSlider" id="speedSliderValue">0</label>
         <div class="row-container">
-            <button class="button" type="button" id="stopGoBtn">stop/go</button>
+            <button class="button" type="button" id="stopGoBtn">Vorwärts</button>
+            <button class="button" type="button" id="reverseGoBtn">Rückwärts</button>
         </div>
       </div>
 
@@ -83,11 +84,11 @@
           <h4>Speed</h4>
         </div>
         <div class="row-container">
-          <label for="speedSlider2" id="minSpeedLabel">-100%</label>
-          <input type="range" id="speedSlider2" class="slider" min="-100" max="100" aria-label="Speed Slider" >
-          <label for="speedSlider2" id="maxSpeedLabel">100%</label>
+          <label for="speedSlider2" id="minSpeedLabel">{{MIN_DUTY}}</label>
+          <input type="range" id="speedSlider2" class="slider" min="{{MIN_DUTY}}" max="{{MAX_DUTY}}" aria-label="Speed Slider" >
+          <label for="speedSlider2" id="maxSpeedLabel">{{MAX_DUTY}}</label>
         </div> 
-        <label for="speedSlider2" id="speedSlider2Value">50%</label>
+        <label for="speedSlider2" id="speedSlider2Value">0</label>
         <div class="row-container">
           <h4>Time</h4>
         </div>
@@ -98,7 +99,8 @@
         </div>
         <label for="timeSlider" id="timeSliderValue">1.5 s</label>
         <div class="row-container">
-          <button class="button" id="fireBtn">Fire</button>
+          <button class="button" id="fireBtn">Fire vorwärts</button>
+          <button class="button" id="reverseFireBtn">Fire rückwärts</button>
         </div>
       </div>
     </div>
@@ -164,40 +166,49 @@
         const speedSlider2Value = document.getElementById("speedSlider2Value");
         const timeSliderValue = document.getElementById("timeSliderValue");
         const stopGoButton = document.getElementById("stopGoBtn");
+        const reverseGoButton = document.getElementById("reverseGoBtn");
         const fireButton = document.getElementById("fireBtn");
+        const reverseFireButton = document.getElementById("reverseFireBtn");
 
-        speedSliderValue.textContent = speedSlider.value + "%";
-        speedSlider2Value.textContent = speedSlider2.value + "%";
+        speedSliderValue.textContent = speedSlider.value;
+        speedSlider2Value.textContent = speedSlider2.value;
         timeSliderValue.textContent = timeSlider.value + " s";
 
-        stopGoButton.addEventListener("mousedown", motorGo);
-        stopGoButton.addEventListener("mouseup", motorStop);
-        fireButton.addEventListener("click", fire);
+        bindMotorButton(stopGoButton, speedSlider, 1);
+        bindMotorButton(reverseGoButton, speedSlider, -1);
+        fireButton.addEventListener("click", () => fire(1));
+        reverseFireButton.addEventListener("click", () => fire(-1));
         speedSlider.addEventListener("input", () => {
-            speedSliderValue.textContent = speedSlider.value + "%";
+            speedSliderValue.textContent = speedSlider.value;
         });
         speedSlider2.addEventListener("input", () => {
-            speedSlider2Value.textContent = speedSlider2.value + "%";
+            speedSlider2Value.textContent = speedSlider2.value;
         });
         timeSlider.addEventListener("input", () => {
             timeSliderValue.textContent = timeSlider.value + " s";
         });
 
-        function fire() {
-            const speed = speedSlider2.value;
+        function fire(direction) {
+            const duty = direction * Math.abs(Number(speedSlider2.value));
             const time = timeSlider.value;
-            const url = `fire?speed=${speed}&time=${time}`;
+            const url = `fire?duty=${duty}&time=${time}`;
             console.log("ws send: " + url);
             ws.send(url);
         }
 
-        function motorGo() {
-            const speed = speedSlider2.value;
-            const time = timeSlider.value;
-            const url = `motorGo?speed=${speed}&time=${time}`;
-            console.log("ws send: " + url);
-            ws.send(url);
+        function bindMotorButton(button, slider, direction) {
+            const motorGo = () => {
+                const duty = direction * Math.abs(Number(slider.value));
+                const url = `motorGo?duty=${duty}`;
+                console.log("ws send: " + url);
+                ws.send(url);
+            };
+            button.addEventListener("pointerdown", motorGo);
+            button.addEventListener("pointerup", motorStop);
+            // button.addEventListener("pointercancel", motorStop);
+            // button.addEventListener("pointerleave", motorStop);
         }
+
         function motorStop() {
             const url = "motorStop";
             console.log("ws send: " + url);

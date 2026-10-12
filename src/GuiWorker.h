@@ -23,13 +23,13 @@ class GuiWorker {
 public:
     // Constructor
     GuiWorker();
-    void init();
+    void init(uint8_t pwmResolution);
     void handleGui();
     void debugPrint(const char* format, ...);
-    void onFireButtonClick(void (*callback)(int speed, float steps)) {
+    void onFireButtonClick(void (*callback)(int32_t duty, float seconds)) {
         fireButtonCallback = callback;
     }
-    void onMotorGo(void (*callback)(int speed)) {
+    void onMotorGo(void (*callback)(int32_t duty)) {
         motorGoCallback = callback;
     }
     void onMotorStop(void (*callback)()) {
@@ -39,11 +39,13 @@ public:
 
 private:
     // Private member variables
-    void (*fireButtonCallback)(int speed, float steps) = nullptr;
-    void (*motorGoCallback)(int speed) = nullptr;
+    void (*fireButtonCallback)(int32_t duty, float seconds) = nullptr;
+    void (*motorGoCallback)(int32_t duty) = nullptr;
     void (*motorStopCallback)() = nullptr;
     WebSocketsServer webSocketServer;
     AsyncWebServer server;
+    uint32_t minDuty = 0;
+    uint32_t maxDuty = 0;
 
     // Private member functions
     void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
@@ -67,7 +69,13 @@ void GuiWorker::debugPrint(const char* format, ...) {
 #endif
 }
 
-void GuiWorker::init() {
+void GuiWorker::init(uint8_t pwmResolution) {
+    if (pwmResolution == 0 || pwmResolution > 20) {
+        debugPrint("Invalid PWM resolution: %u", pwmResolution);
+        return;
+    }
+    maxDuty = (1UL << pwmResolution) - 1;
+
     //set fix IP address
     // IPAddress local_IP(192,168,178,42);
     // if (!WiFi.config(local_IP, WiFi.gatewayIP(), WiFi.subnetMask())) {
@@ -89,7 +97,10 @@ void GuiWorker::init() {
     debugPrint("WebSocket server started.");
 
     server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
-        request->send(200, "text/html", DataWorker().getFileContent("/motor_control_gui.html"));
+        String page = DataWorker().getFileContent("/motor_control_gui.html");
+        page.replace("{{MIN_DUTY}}", String(minDuty));
+        page.replace("{{MAX_DUTY}}", String(maxDuty));
+        request->send(200, "text/html", page);
     });
     server.begin();
 }
@@ -109,7 +120,7 @@ int GuiWorker::extractArgs(const String& input, std::vector<String>& argNames, s
     // debugPrint("Extracting arguments");
     int pos = input.indexOf('?');
     if (pos == -1) {
-        debugPrint("No arguments found");
+        // debugPrint("No arguments found");
         return 0; // Falls kein '?' vorhanden ist, keine Argumente
     }
     String query = input.substring(pos + 1);
@@ -169,27 +180,36 @@ void GuiWorker::handleMessage(const String& message) {
     std::vector<String> argNames;
     std::vector<String> args;
     int numArgs = extractArgs(message, argNames, args);
-    debugPrint("Command: %s", command.c_str());
-    debugPrint("NumArgs: %d", numArgs);
+    // debugPrint("Command: %s", command.c_str());
+    // debugPrint("NumArgs: %d", numArgs);
     for (int i = 0; i < numArgs; i++) {
         debugPrint("%s: %s", argNames[i].c_str(), args[i].c_str());
     }
 
     if (command == "fire") {
-        int speed = args[0].toInt();
+        if (numArgs < 2) {
+            debugPrint("Fire command requires duty and time arguments");
+            return;
+        }
+        int32_t duty = args[0].toInt();
         float time = args[1].toFloat();
-        debugPrint("Fire command received with speed: %d and time: %.2f", speed, time);
+        debugPrint("Fire command received with duty: %ld and time: %.2f",
+                   static_cast<long>(duty), time);
         if(fireButtonCallback) {
-            fireButtonCallback(speed, time);
+            fireButtonCallback(duty, time);
         } else {
             debugPrint("No callback set for fire button");
         }
     }
     else if (command == "motorGo") {
-        int speed = args[0].toInt();
-        debugPrint("MotorGo command received with speed: %d", speed);
+        if (numArgs < 1) {
+            debugPrint("MotorGo command requires a duty argument");
+            return;
+        }
+        int32_t duty = args[0].toInt();
+        debugPrint("MotorGo command received with duty: %ld", static_cast<long>(duty));
         if (motorGoCallback) {
-            motorGoCallback(speed);
+            motorGoCallback(duty);
         } else {
             debugPrint("No callback set for motor go");
         }
