@@ -175,10 +175,10 @@ void GuiWorker::handleMessage(const String& message) {
 
     if (command == "fire") {
         int speed = args[0].toInt();
-        int steps = args[1].toInt();
-        debugPrint("Fire command received with speed: " + String(speed) + " and steps: " + String(steps));
+        int time = args[1].toInt();
+        debugPrint("Fire command received with speed: " + String(speed) + " and time: " + String(time));
         if(fireButtonCallback) {
-            fireButtonCallback(speed, steps);
+            fireButtonCallback(speed, time);
         } else {
             debugPrint("No callback set for fire button");
         }
