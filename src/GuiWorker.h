@@ -3,16 +3,18 @@
 #include <WebSocketsServer.h>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
+#include <stdarg.h>
+#include "Debug.h"
 #include "DataWorker.h"
 
-// #define DEBUG
+#define DEBUG
 
-// #define WIFI_SSID                    "FRITZ!Mox"
-// #define WIFI_PASSWORD               "BugolEiz42"
+#define WIFI_SSID                    "FRITZ!Mox"
+#define WIFI_PASSWORD               "BugolEiz42"
 // #define WIFI_SSID                    "ZenFone7 Pro_6535"
 // #define WIFI_PASSWORD                "e24500606"
-#define WIFI_SSID                    "SM-Fritz"
-#define WIFI_PASSWORD                "47434951325606561069"
+// #define WIFI_SSID                    "SM-Fritz"
+// #define WIFI_PASSWORD                "47434951325606561069"
 // #define WIFI_SSID                    "Pixel_8965"
 // #define WIFI_PASSWORD                "12345678"
 
@@ -23,7 +25,8 @@ public:
     GuiWorker();
     void init();
     void handleGui();
-    void onFireButtonClick(void (*callback)(int speed, int steps)) {
+    void debugPrint(const char* format, ...);
+    void onFireButtonClick(void (*callback)(int speed, float steps)) {
         fireButtonCallback = callback;
     }
     void onMotorGo(void (*callback)(int speed)) {
@@ -36,7 +39,7 @@ public:
 
 private:
     // Private member variables
-    void (*fireButtonCallback)(int speed, int steps) = nullptr;
+    void (*fireButtonCallback)(int speed, float steps) = nullptr;
     void (*motorGoCallback)(int speed) = nullptr;
     void (*motorStopCallback)() = nullptr;
     WebSocketsServer webSocketServer;
@@ -46,7 +49,6 @@ private:
     void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
     String extractCommand(const String& input);
     int extractArgs(const String& input, std::vector<String>& argNames, std::vector<String>& args);
-    void debugPrint(String str);
     void handleMessage(const String& message);
 };
 
@@ -54,10 +56,14 @@ GuiWorker::GuiWorker() : webSocketServer(81), server(80) {
     // Constructor
 }
 
-void GuiWorker::debugPrint(String str) {
+void GuiWorker::debugPrint(const char* format, ...) {
 #ifdef DEBUG
-    Serial.print("[debug]: ");
-    Serial.println(str);
+    va_list args;
+    va_start(args, format);
+    writeDebugMessage("GuiWorker", format, args);
+    va_end(args);
+#else
+    (void)format;
 #endif
 }
 
@@ -65,17 +71,13 @@ void GuiWorker::init() {
     //set fix IP address
     // IPAddress local_IP(192,168,178,42);
     // if (!WiFi.config(local_IP, WiFi.gatewayIP(), WiFi.subnetMask())) {
-    //     Serial.println("STA Failed to configure");
-    // }
-
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
         debugPrint("Connecting to WiFi...");
     }
     debugPrint("Connected to WiFi");
-    debugPrint("IP address: ");
-    Serial.println(WiFi.localIP());     //TODO.
+    debugPrint("IP address: %s", WiFi.localIP().toString().c_str());
 
 
     // Start WebSocket-Server
@@ -142,16 +144,16 @@ int GuiWorker::extractArgs(const String& input, std::vector<String>& argNames, s
 void GuiWorker::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
     switch (type) {
     case WStype_DISCONNECTED:
-        debugPrint(String(num) + " Disconnected!");
+        debugPrint("%d Disconnected!", num);
         break;
 
     case WStype_CONNECTED:
-        debugPrint(String(num) + " Connected!");
+        debugPrint("%d Connected!", num);
         webSocketServer.sendTXT(num, "Hello from ESP32!");  //TODO mit this-> verdeutlichen, dass es sich um die Instanz der Klasse handelt
 
         break;
     case WStype_TEXT:
-        debugPrint(String(num) + " Message received: " + String((char*)payload));
+        debugPrint("%d Message received: %s", num, (char*)payload);
         String receivedMessage = String((char*)payload);
         handleMessage(receivedMessage);
         break;
@@ -167,16 +169,16 @@ void GuiWorker::handleMessage(const String& message) {
     std::vector<String> argNames;
     std::vector<String> args;
     int numArgs = extractArgs(message, argNames, args);
-    debugPrint("Command: " + command);
-    debugPrint("NumArgs: " + String(numArgs));
+    debugPrint("Command: %s", command.c_str());
+    debugPrint("NumArgs: %d", numArgs);
     for (int i = 0; i < numArgs; i++) {
-        debugPrint(argNames[i] + ": " + args[i]);
+        debugPrint("%s: %s", argNames[i].c_str(), args[i].c_str());
     }
 
     if (command == "fire") {
         int speed = args[0].toInt();
-        int time = args[1].toInt();
-        debugPrint("Fire command received with speed: " + String(speed) + " and time: " + String(time));
+        float time = args[1].toFloat();
+        debugPrint("Fire command received with speed: %d and time: %.2f", speed, time);
         if(fireButtonCallback) {
             fireButtonCallback(speed, time);
         } else {
@@ -185,7 +187,7 @@ void GuiWorker::handleMessage(const String& message) {
     }
     else if (command == "motorGo") {
         int speed = args[0].toInt();
-        debugPrint("MotorGo command received with speed: " + String(speed));
+        debugPrint("MotorGo command received with speed: %d", speed);
         if (motorGoCallback) {
             motorGoCallback(speed);
         } else {

@@ -2,6 +2,7 @@
 // #include <AccelStepper.h>
 #include "GuiWorker.h"
 #include "MotorWorker.h"
+#include "Debug.h"
 
 
 // put function declarations here:
@@ -10,21 +11,32 @@ MotorWorker motorWorker(20000, 8); // Initialize MotorWorker with motor pin 19, 
 // AccelStepper stepper(AccelStepper::FULL4WIRE, 19,5,18,17);
  // Define the stepper motor pins
 
+void debugPrint(const char* format, ...) {
+#ifdef DEBUG
+    va_list args;
+    va_start(args, format);
+    writeDebugMessage("main", format, args);
+    va_end(args);
+#else
+    (void)format;
+#endif
+}
+
 void setup() {
   Serial.begin(115200);
-  Serial.println("Hello World!");
+  debugPrint("Hello World!");
   guiWorker.init();
 
-  guiWorker.onFireButtonClick([](int speed, int time) {
-    Serial.printf("Fire button pressed with speed: %d, time: %d\n", speed, time);
+  guiWorker.onFireButtonClick([](int speed, float time) {
+    debugPrint("Fire button pressed with speed: %d, time: %.2f", speed, time);
     motorWorker.run(speed, time);
   });
   guiWorker.onMotorGo([](int speed) {
-    Serial.printf("Motor go with speed: %d\n", speed);
+    debugPrint("Motor go with speed: %d", speed);
     motorWorker.run(speed);
   });
   guiWorker.onMotorStop([]() {
-    Serial.println("Motor stop");
+    debugPrint("Motor stop");
     motorWorker.stop();
   });
 
